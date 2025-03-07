@@ -2,6 +2,13 @@
 library(dplyr)
 library(readr)
 library(ggplot2)
+library(tibble)
+library(ggrepel)
+library(tidyr)
+library(cowplot)
+library(ggstatsplot)
+library(palmerpenguins)
+library(tidyverse)
 
 ### Directories
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
