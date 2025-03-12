@@ -9,6 +9,8 @@ library(cowplot)
 library(ggstatsplot)
 library(palmerpenguins)
 library(tidyverse)
+library(rstatix)
+library(ggpubr)
 
 ### Directories
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
