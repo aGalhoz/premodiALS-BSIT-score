@@ -2,7 +2,7 @@ source("00_initialization.R")
 
 ## All patients
 patients_all <- GeneralDocumentation %>%
-  select(PatientID, PGMC, ALSuncertainty, ALSFUdiagnosis) %>%
+  select(PatientID, PGMC, ALSuncertainty, ALSFUdiagnosis,LFU) %>%
   unique()
 
 ## control patients
@@ -23,12 +23,32 @@ writexl::write_xlsx(patients_PGMC3_ALSuncertainty_NA,"results/patients_ALSuncert
 patients_PGMC3_ALSFUdiagnosis_NA <- patients_all %>%
   left_join(BSIT %>% select(PatientID, BsitExists)) %>%
   filter(PGMC == 3 & BsitExists == 1 &  is.na(ALSFUdiagnosis)) %>%
-  left_join(GeneralDocumentation %>% select(PatientID,ParticipantCode))# 111 patients
+  left_join(GeneralDocumentation %>% select(PatientID,ParticipantCode)) %>%
+  left_join(patients_ALSFUdiagnosisNA_LT %>% select(PatientID,`...7`)) %>%
+  rename(comment = `...7`)# 111 patients 
 writexl::write_xlsx(patients_PGMC3_ALSFUdiagnosis_NA,"results/patients_ALSFUdiagnosisNA.xlsx")
 
 # PGMC patients 
-patients_pgmc = patients_all %>% # 52 pgmc patients
+patients_pgmc = GeneralDocumentation %>%
+  select(PatientID, PGMC,MutationTypeC9orf72,
+         MutationTypeOther, MutationTypeSOD1, MutationTypeTARDBP) %>% # 52 pgmc patients
   filter(PGMC == 1)
+patients_pgmc_mut_other = GeneralDocumentation %>%
+  select(PatientID, PGMC,MutationTypeC9orf72,
+         MutationTypeOther, MutationTypeSOD1, MutationTypeTARDBP) %>% # 5 pgmc patients
+  filter(PGMC == 1 & MutationTypeOther == 1)
+patients_pgmc_mut_C9orf72 = GeneralDocumentation %>%
+  select(PatientID, PGMC,MutationTypeC9orf72,
+         MutationTypeOther, MutationTypeSOD1, MutationTypeTARDBP) %>% # 21 pgmc patients
+  filter(PGMC == 1 & MutationTypeC9orf72 == 1)
+patients_pgmc_mut_TARDBP = GeneralDocumentation %>%
+  select(PatientID, PGMC,MutationTypeC9orf72,
+         MutationTypeOther, MutationTypeSOD1, MutationTypeTARDBP) %>% # 5 pgmc patients
+  filter(PGMC == 1 & MutationTypeTARDBP == 1)
+patients_pgmc_mut_SOD1 = GeneralDocumentation %>%
+  select(PatientID, PGMC,MutationTypeC9orf72,
+         MutationTypeOther, MutationTypeSOD1, MutationTypeTARDBP) %>% # 15 pgmc patients
+  filter(PGMC == 1 & MutationTypeSOD1 == 1)
 
 # smell data
 smell_data = BSIT %>%
@@ -60,6 +80,26 @@ smell_data_V0_PGMC = smell_data_V0 %>% # 52 PGMC with V0 info
   filter(rowSums(is.na(.))<12)
 smell_data_V1_PGMC = smell_data_V1 %>% # 25 PGMC with V1 info
   filter(PatientID %in% patients_pgmc$PatientID) %>%
+  filter(rowSums(is.na(.))<12)
+
+# smell data PGMC (other mutation)
+smell_data_V0_PGMC_mut_other = smell_data_V0 %>% # 5 PGMC with V0 info
+  filter(PatientID %in% patients_pgmc_mut_other$PatientID) %>%
+  filter(rowSums(is.na(.))<12)
+
+# smell data PGMC (mutation C9orf72)
+smell_data_V0_PGMC_mut_C9orf72 = smell_data_V0 %>% # 21 PGMC with V0 info
+  filter(PatientID %in% patients_pgmc_mut_C9orf72$PatientID) %>%
+  filter(rowSums(is.na(.))<12)
+
+# smell data PGMC (mutation SOD1)
+smell_data_V0_PGMC_mut_SOD1 = smell_data_V0 %>% # 15 PGMC with V0 info
+  filter(PatientID %in% patients_pgmc_mut_SOD1$PatientID) %>%
+  filter(rowSums(is.na(.))<12)
+
+# smell data PGMC (mutation TARDBP)
+smell_data_V0_PGMC_mut_TARDBP = smell_data_V0 %>% # 5 PGMC with V0 info
+  filter(PatientID %in% patients_pgmc_mut_TARDBP$PatientID) %>%
   filter(rowSums(is.na(.))<12)
 
 # check which patients have NA in the data
@@ -106,6 +146,11 @@ smell_data_V1_CTR = change_coding_data(smell_data_V1_CTR)
 # -> PGMC
 smell_data_V0_PGMC = change_coding_data(smell_data_V0_PGMC)
 smell_data_V1_PGMC = change_coding_data(smell_data_V1_PGMC)
+# -> PGMC with several mutations
+smell_data_V0_PGMC_mut_other = change_coding_data(smell_data_V0_PGMC_mut_other)
+smell_data_V0_PGMC_mut_C9orf72 = change_coding_data(smell_data_V0_PGMC_mut_C9orf72)
+smell_data_V0_PGMC_mut_SOD1 = change_coding_data(smell_data_V0_PGMC_mut_SOD1)
+smell_data_V0_PGMC_mut_TARDBP = change_coding_data(smell_data_V0_PGMC_mut_TARDBP)
 
 # summarise all odors to a single score
 summarise_score <- function(data){
@@ -117,6 +162,10 @@ summarise_score <- function(data){
 smell_data_V0_ALS = summarise_score(smell_data_V0_ALS)
 smell_data_V0_CTR = summarise_score(smell_data_V0_CTR)
 smell_data_V0_PGMC = summarise_score(smell_data_V0_PGMC)
+smell_data_V0_PGMC_mut_other = summarise_score(smell_data_V0_PGMC_mut_other)
+smell_data_V0_PGMC_mut_C9orf72 = summarise_score(smell_data_V0_PGMC_mut_C9orf72)
+smell_data_V0_PGMC_mut_SOD1 = summarise_score(smell_data_V0_PGMC_mut_SOD1)
+smell_data_V0_PGMC_mut_TARDBP = summarise_score(smell_data_V0_PGMC_mut_TARDBP)
 smell_data_V1_ALS = summarise_score(smell_data_V1_ALS)
 smell_data_V1_CTR = summarise_score(smell_data_V1_CTR)
 smell_data_V1_PGMC = summarise_score(smell_data_V1_PGMC)
@@ -135,6 +184,12 @@ smell_data_V0_ALS_PGMC = rbind(smell_data_V0_ALS,
                                smell_data_V0_PGMC)
 score_V0_ALS_PGMC = data.frame(score = c(smell_data_V0_ALS$score,
                           smell_data_V0_PGMC$score))
+score_data_V0_PGMC_mut_other_C9orf72 = data.frame(score = c(smell_data_V0_PGMC_mut_other$score,
+                                                            smell_data_V0_PGMC_mut_C9orf72$score))
+score_data_V0_PGMC_mut_other_SOD1 = data.frame(score = c(smell_data_V0_PGMC_mut_other$score,
+                                                            smell_data_V0_PGMC_mut_SOD1$score))
+score_data_V0_PGMC_mut_other_TARDBP = data.frame(score = c(smell_data_V0_PGMC_mut_other$score,
+                                                            smell_data_V0_PGMC_mut_TARDBP$score))
 smell_data_V1_ALS_PGMC = rbind(smell_data_V1_ALS,
                                smell_data_V1_PGMC)
 score_V1_ALS_PGMC = data.frame(score = c(smell_data_V1_ALS$score,
@@ -160,3 +215,9 @@ status_V0_CTR_PGMC = c(rep("CTR",nrow(smell_data_V0_CTR)),
                        rep("PGMC", nrow(smell_data_V0_PGMC)))
 status_V1_CTR_PGMC = c(rep("CTR",nrow(smell_data_V1_CTR)),
                        rep("PGMC", nrow(smell_data_V1_PGMC)))
+status_V0_PGMC_other_C9orf72 = c(rep("PGMC_other", nrow(smell_data_V0_PGMC_mut_other)),
+                                 rep("PGMC_C9orf72", nrow(smell_data_V0_PGMC_mut_C9orf72)))
+status_V0_PGMC_other_SOD1 = c(rep("PGMC_other", nrow(smell_data_V0_PGMC_mut_other)),
+                                 rep("PGMC_SOD1", nrow(smell_data_V0_PGMC_mut_SOD1)))
+status_V0_PGMC_other_TARDBP = c(rep("PGMC_other", nrow(smell_data_V0_PGMC_mut_other)),
+                                 rep("PGMC_TARDBP", nrow(smell_data_V0_PGMC_mut_TARDBP)))
