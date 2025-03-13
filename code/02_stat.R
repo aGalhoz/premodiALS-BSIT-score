@@ -85,6 +85,7 @@ writexl::write_xlsx(res_V0_PGMC_other_TARDBP,"results/V0_PGMC_other_TARDBP.xlsx"
 
 # mean and standard deviation
 t.test(smell_data_V0_ALS$score,smell_data_V0_CTR$score)
+wilcox.test(smell_data_V1_ALS$score,smell_data_V1_CTR$score)
 sd(smell_data_V0_ALS$score)
 sd(smell_data_V0_CTR$score)
 
