@@ -50,6 +50,11 @@ score_status_V0_PGMC_other_SOD1 = data.frame(score = score_data_V0_PGMC_mut_othe
                                                 status = status_V0_PGMC_other_SOD1)
 score_status_V0_PGMC_other_TARDBP = data.frame(score = score_data_V0_PGMC_mut_other_TARDBP$score,
                                              status = status_V0_PGMC_other_TARDBP)
+score_status_V0_PGMC_mutations <- rbind(score_status_V0_PGMC_other_C9orf72,
+                                        score_status_V0_PGMC_other_SOD1 %>% filter(status == "PGMC_SOD1"),
+                                        score_status_V0_PGMC_other_TARDBP %>% filter(status == "PGMC_TARDBP"))
+score_status_V0_PGMC_mutations$status <- factor(score_status_V0_PGMC_mutations$status,
+                                                levels = c("PGMC_C9orf72","PGMC_SOD1","PGMC_TARDBP","PGMC_other"))
 
 # data to send Laura
 score_status_V0_V1_reduced <- rbind(score_status_V0_V1_ALS_CTR %>%
@@ -148,6 +153,8 @@ save_plot_pdf(p, filename = "plots/grouped_violin_ALS_CTR_PGMC_bothvisits.pdf",w
 score_status_V0_V1$status <- factor(score_status_V0_V1$status,levels = c("CTR","PGMC","ALS"))
 p = grouped_violin_plot(score_status_V0_V1, "ALS, CTR and PGMC scores at V0 and V1 (all participants)") 
 save_plot_pdf(p, filename = "plots/grouped_violin_ALS_CTR_PGMC_all.pdf",width = 8,height = 6)
+p = grouped_violin_plot_mutation(score_status_V0_PGMC_mutations,"PGMC mutations at V0")
+save_plot_pdf(p, filename = "plots/grouped_violin_PGMC_mutations.pdf",width = 8,height = 6)
 
 # pairwise violin plots
 score_status_V0_V1_reduced_PGMC = score_status_V0_V1_reduced %>% filter(status == "PGMC") 
@@ -430,14 +437,14 @@ histogram_plot = function(data,title_plot,max_y){
 }
 
 violin_plots <- function(data,title_plot){
-  stats_results <- ggbetweenstats(data, status, score) %>% extract_subtitle()
+  # stats_results <- ggbetweenstats(data, status, score) %>% extract_subtitle()
   ggbetweenstats(data,x = status, y = score,
-                 type = "p",
+                 type = "np",
                  conf.level = 0.95,
-                 results.subtitle = FALSE) + 
+                 results.subtitle = TRUE) + 
     labs(x = "",
          y = "B-SIT score",
-         subtitle = stats_results,
+         #subtitle = stats_results,
          title = title_plot) +
     scale_color_manual(values  = c('CTR' = '#6F8EB2',  
                                    'ALS' = '#B2936F',
@@ -467,13 +474,15 @@ grouped_violin_plot <- function(data,title_plot){
   #   t_test(status ~ score)
   # stat.test <- stat.test %>%
   #   add_xy_position(x = "visit", dodge = 0.8)
-  res.aov = anova_test(
-    data = data, dv = score, wid = PatientID,
-    between = status, within = visit
-  )
+  # res.aov = anova_test(
+  #   data = data, dv = score, wid = PatientID,
+  #   between = status, within = visit
+  # )
+  stats_results_V0 <-  kruskal.test(score ~ status, data = data %>% filter(visit == "V0"))
+  stats_results_V1 <-  kruskal.test(score ~ status, data = data %>% filter(visit == "V1"))
   sign <- data %>%
     group_by(visit) %>%
-    pairwise_t_test(score ~ status, p.adjust.method = "bonferroni")  %>%
+    pairwise_wilcox_test(score ~ status, p.adjust.method = "bonferroni")  %>%
     add_xy_position(x = "visit")
   ggplot(data, aes(visit, score, group = interaction(visit,status))) +
     geom_point(aes(color = status, fill = after_scale(alpha(colour, 0.5))), 
@@ -504,6 +513,54 @@ grouped_violin_plot <- function(data,title_plot){
     labs(x = "Visits",
          y = "B-SIT score",
          title = title_plot) +
-    stat_pvalue_manual(sign,label = "p", y.position = 13, tip.length = 0.02,step.increase = 0.1) +
-    labs(subtitle = get_test_label(res.aov, detailed = TRUE), caption = get_pwc_label(sign))
+    stat_pvalue_manual(sign,label = "p",
+                       y.position = 13, 
+                       tip.length = 0.02,
+                       dodge = 0.8,
+                       step.increase = 0.1,
+                       step.group.by = "visit") +
+    labs(subtitle = paste0("Kruskal-Wallis (V0) = ",round(stats_results_V0$p.value,3),
+                           "; Kruskal-Wallis (V1) = ",round(stats_results_V1$p.value,3)))
+}
+
+grouped_violin_plot_mutation <- function(data,title_plot){
+  stats_results_V0 <-  kruskal.test(score ~ status, data = data)
+  sign <- data %>%
+    pairwise_wilcox_test(score ~ status, p.adjust.method = "bonferroni") 
+  ggplot(data, aes(status, score, group = status)) +
+    geom_point(aes(color = status, fill = after_scale(alpha(colour, 0.5))), 
+               position = position_jitterdodge(dodge.width = 0.6, 0.1),
+               size = 3, shape = 21) +
+    geom_boxplot(fill = NA, color = "black", width = 0.2, linewidth = 0.4,
+                 position = position_dodge(0.6)) +
+    geom_violin(fill = NA, color = "black", width = 0.6, linewidth = 0.4,
+                position = position_dodge(0.6)) +
+    geom_point(stat = "summary", size = 4, color = "#8a0f00",
+               position = position_dodge(0.6), fun = mean) +
+    scale_color_brewer(palette = "Set2") +
+    theme_minimal(base_size = 12) +
+    theme(axis.title = element_text(face = 2),
+          legend.position = "bottom",
+          axis.text.y.right = element_blank()) + 
+    geom_label_repel(stat = "summary", fun = mean, size = 3.5,
+                     aes(label = paste0("hat(mu)*scriptstyle(mean)==", 
+                                        round(after_stat(y), 2))),
+                     parse = TRUE, position = position_dodge(0.6)) +
+    scale_color_manual(values  = c('PGMC_other' = '#ad5291',
+                                   'PGMC_C9orf72' = '#55aa82',
+                                   'PGMC_SOD1' = '#4661b9',
+                                   'PGMC_TARDBP' = '#B99E46')) +
+    # stat_pvalue_manual(
+    #   stat.test, label = "p.adj", tip.length = 0.01,
+    #   bracket.nudge.y = -2) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+    labs(x = "Mutations at PGMC",
+         y = "B-SIT score",
+         title = title_plot) +
+    stat_pvalue_manual(sign,label = "p",
+                       y.position = 13, 
+                       tip.length = 0.02,
+                       dodge = 0.8,
+                       step.increase = 0.1) +
+    labs(subtitle = paste0("Kruskal-Wallis = ",round(stats_results_V0$p.value,3)))
 }
