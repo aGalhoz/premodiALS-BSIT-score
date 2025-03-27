@@ -54,6 +54,7 @@ writexl::write_xlsx(res_VO_CTR_PGMC,"results/V0_CTR_PGMC.xlsx")
 writexl::write_xlsx(res_V1_CTR_PGMC,"results/V1_CTR_PGMC.xlsx")
 
 # PGMC (other) vs PGMC (C9orf72)
+# -> V0
 data_V0_PGMC_other_C9orf72 = cbind(score_data_V0_PGMC_mut_other_C9orf72, status = status_V0_PGMC_other_C9orf72)
 data_V0_PGMC_other_C9orf72$status = factor(data_V0_PGMC_other_C9orf72$status, levels = c("PGMC_other","PGMC_C9orf72"))
 data_V0_PGMC_other_C9orf72$status = relevel(data_V0_PGMC_other_C9orf72$status, ref = "PGMC_C9orf72")
@@ -63,7 +64,18 @@ res_V0_PGMC_other_C9orf72 = summary_stats(res_V0_PGMC_other_C9orf72)
 
 writexl::write_xlsx(res_V0_PGMC_other_C9orf72,"results/V0_PGMC_other_C9orf72.xlsx")
 
+# -> V1
+data_V1_PGMC_other_C9orf72 = cbind(score_data_V1_PGMC_mut_other_C9orf72, status = status_V1_PGMC_other_C9orf72)
+data_V1_PGMC_other_C9orf72$status = factor(data_V1_PGMC_other_C9orf72$status, levels = c("PGMC_other","PGMC_C9orf72"))
+data_V1_PGMC_other_C9orf72$status = relevel(data_V1_PGMC_other_C9orf72$status, ref = "PGMC_C9orf72")
+
+res_V1_PGMC_other_C9orf72 = univariate_model_new(data_V1_PGMC_other_C9orf72)[[1]]
+res_V1_PGMC_other_C9orf72 = summary_stats(res_V1_PGMC_other_C9orf72)
+
+writexl::write_xlsx(res_V1_PGMC_other_C9orf72,"results/V1_PGMC_other_C9orf72.xlsx")
+
 # PGMC (other) vs PGMC (SOD1)
+# -> V0
 data_V0_PGMC_other_SOD1 = cbind(score_data_V0_PGMC_mut_other_SOD1, status = status_V0_PGMC_other_SOD1)
 data_V0_PGMC_other_SOD1$status = factor(data_V0_PGMC_other_SOD1$status, levels = c("PGMC_other","PGMC_SOD1"))
 data_V0_PGMC_other_SOD1$status = relevel(data_V0_PGMC_other_SOD1$status, ref = "PGMC_SOD1")
@@ -73,7 +85,18 @@ res_V0_PGMC_other_SOD1 = summary_stats(res_V0_PGMC_other_SOD1)
 
 writexl::write_xlsx(res_V0_PGMC_other_SOD1,"results/V0_PGMC_other_SOD1.xlsx")
 
+# -> V1
+data_V1_PGMC_other_SOD1 = cbind(score_data_V1_PGMC_mut_other_SOD1, status = status_V1_PGMC_other_SOD1)
+data_V1_PGMC_other_SOD1$status = factor(data_V1_PGMC_other_SOD1$status, levels = c("PGMC_other","PGMC_SOD1"))
+data_V1_PGMC_other_SOD1$status = relevel(data_V1_PGMC_other_SOD1$status, ref = "PGMC_SOD1")
+
+res_V1_PGMC_other_SOD1 = univariate_model_new(data_V1_PGMC_other_SOD1)[[1]]
+res_V1_PGMC_other_SOD1 = summary_stats(res_V1_PGMC_other_SOD1)
+
+writexl::write_xlsx(res_V1_PGMC_other_SOD1,"results/V1_PGMC_other_SOD1.xlsx")
+
 # PGMC (other) vs PGMC (TARDBP)
+# -> V0
 data_V0_PGMC_other_TARDBP = cbind(score_data_V0_PGMC_mut_other_TARDBP, status = status_V0_PGMC_other_TARDBP)
 data_V0_PGMC_other_TARDBP$status = factor(data_V0_PGMC_other_TARDBP$status, levels = c("PGMC_other","PGMC_TARDBP"))
 data_V0_PGMC_other_TARDBP$status = relevel(data_V0_PGMC_other_TARDBP$status, ref = "PGMC_TARDBP")
@@ -82,6 +105,16 @@ res_V0_PGMC_other_TARDBP = univariate_model_new(data_V0_PGMC_other_TARDBP)[[1]]
 res_V0_PGMC_other_TARDBP = summary_stats(res_V0_PGMC_other_TARDBP)
 
 writexl::write_xlsx(res_V0_PGMC_other_TARDBP,"results/V0_PGMC_other_TARDBP.xlsx")
+
+# -> V1
+data_V1_PGMC_other_TARDBP = cbind(score_data_V1_PGMC_mut_other_TARDBP, status = status_V1_PGMC_other_TARDBP)
+data_V1_PGMC_other_TARDBP$status = factor(data_V1_PGMC_other_TARDBP$status, levels = c("PGMC_other","PGMC_TARDBP"))
+data_V1_PGMC_other_TARDBP$status = relevel(data_V1_PGMC_other_TARDBP$status, ref = "PGMC_TARDBP")
+
+res_V1_PGMC_other_TARDBP = univariate_model_new(data_V1_PGMC_other_TARDBP)[[1]]
+res_V1_PGMC_other_TARDBP = summary_stats(res_V1_PGMC_other_TARDBP)
+
+writexl::write_xlsx(res_V1_PGMC_other_TARDBP,"results/V1_PGMC_other_TARDBP.xlsx")
 
 # mean and standard deviation
 t.test(smell_data_V0_ALS$score,smell_data_V0_CTR$score)

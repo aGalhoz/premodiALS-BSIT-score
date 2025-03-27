@@ -44,6 +44,8 @@ score_status_V1_CTR_PGMC = data.frame(score = score_V1_CTR_PGMC$score,
 score_status_V0_V1_CTR_PGMC = rbind(score_status_V0_CTR_PGMC_reduced %>%
                                      mutate(visit = rep("V0",46)),
                                     score_status_V1_CTR_PGMC %>% mutate(visit = rep("V1",46)))
+# PGMC mutations
+# -> V0
 score_status_V0_PGMC_other_C9orf72 = data.frame(score = score_data_V0_PGMC_mut_other_C9orf72$score,
                                                     status = status_V0_PGMC_other_C9orf72)
 score_status_V0_PGMC_other_SOD1 = data.frame(score = score_data_V0_PGMC_mut_other_SOD1$score,
@@ -55,6 +57,39 @@ score_status_V0_PGMC_mutations <- rbind(score_status_V0_PGMC_other_C9orf72,
                                         score_status_V0_PGMC_other_TARDBP %>% filter(status == "PGMC_TARDBP"))
 score_status_V0_PGMC_mutations$status <- factor(score_status_V0_PGMC_mutations$status,
                                                 levels = c("PGMC_C9orf72","PGMC_SOD1","PGMC_TARDBP","PGMC_other"))
+# -> V1
+score_status_V1_PGMC_other_C9orf72 = data.frame(score = score_data_V1_PGMC_mut_other_C9orf72$score,
+                                                status = status_V1_PGMC_other_C9orf72)
+score_status_V1_PGMC_other_SOD1 = data.frame(score = score_data_V1_PGMC_mut_other_SOD1$score,
+                                             status = status_V1_PGMC_other_SOD1)
+score_status_V1_PGMC_other_TARDBP = data.frame(score = score_data_V1_PGMC_mut_other_TARDBP$score,
+                                               status = status_V1_PGMC_other_TARDBP)
+score_status_V1_PGMC_mutations <- rbind(score_status_V1_PGMC_other_C9orf72,
+                                        score_status_V1_PGMC_other_SOD1 %>% filter(status == "PGMC_SOD1"),
+                                        score_status_V1_PGMC_other_TARDBP %>% filter(status == "PGMC_TARDBP"))
+score_status_V1_PGMC_mutations$status <- factor(score_status_V1_PGMC_mutations$status,
+                                                levels = c("PGMC_C9orf72","PGMC_SOD1","PGMC_TARDBP","PGMC_other"))
+score_PGMC_V0_all_mutations <- score_status_V0_PGMC_mutations %>%
+  mutate(PatientID = c(smell_data_V0_PGMC_mut_other$PatientID,
+                       smell_data_V0_PGMC_mut_C9orf72$PatientID,
+                       smell_data_V0_PGMC_mut_SOD1$PatientID,
+                       smell_data_V0_PGMC_mut_TARDBP$PatientID)) %>%
+  left_join(GeneralDocumentation %>% select(PatientID,NumRepeatsC9orf72,contains("PreciseMutation")))
+writexl::write_xlsx(score_PGMC_V0_all_mutations,"results/score_PGMC_V0_mutations.xlsx")
+score_PGMC_V1_all_mutations <- score_status_V1_PGMC_mutations %>%
+  mutate(PatientID = c(smell_data_V1_PGMC_mut_other$PatientID,
+                       smell_data_V1_PGMC_mut_C9orf72$PatientID,
+                       smell_data_V1_PGMC_mut_SOD1$PatientID,
+                       smell_data_V1_PGMC_mut_TARDBP$PatientID)) %>%
+  left_join(GeneralDocumentation %>% select(PatientID,NumRepeatsC9orf72,contains("PreciseMutation")))
+writexl::write_xlsx(score_PGMC_V1_all_mutations,"results/score_PGMC_V1_mutations.xlsx")
+
+score_PGMC_all_mutations <- rbind(score_PGMC_V0_all_mutations %>% mutate(visit = rep("V0",52)),
+                                  score_PGMC_V1_all_mutations %>% mutate(visit = rep("V1",25)))
+writexl::write_xlsx(score_PGMC_all_mutations,"results/score_PGMC_mutations.xlsx")
+score_PGMC_all_mutations_reduced <- rbind(score_PGMC_V0_all_mutations %>% mutate(visit = rep("V0",52)) %>%
+                                                                                   filter(PatientID %in% score_PGMC_V1_all_mutations$PatientID),
+                                          score_PGMC_V1_all_mutations %>% mutate(visit = rep("V1",25)))
 
 # data to send Laura
 score_status_V0_V1_reduced <- rbind(score_status_V0_V1_ALS_CTR %>%
@@ -153,8 +188,14 @@ save_plot_pdf(p, filename = "plots/grouped_violin_ALS_CTR_PGMC_bothvisits.pdf",w
 score_status_V0_V1$status <- factor(score_status_V0_V1$status,levels = c("CTR","PGMC","ALS"))
 p = grouped_violin_plot(score_status_V0_V1, "ALS, CTR and PGMC scores at V0 and V1 (all participants)") 
 save_plot_pdf(p, filename = "plots/grouped_violin_ALS_CTR_PGMC_all.pdf",width = 8,height = 6)
-p = grouped_violin_plot_mutation(score_status_V0_PGMC_mutations,"PGMC mutations at V0")
-save_plot_pdf(p, filename = "plots/grouped_violin_PGMC_mutations.pdf",width = 8,height = 6)
+p = grouped_violin_plot(score_PGMC_all_mutations, "PGMC mutations at V0 and V1 (all participants)",ymin = 1.5,ymax = 20) 
+save_plot_pdf(p, filename = "plots/grouped_violin_PGMC_muations_all.pdf",width = 8,height = 6)
+p = grouped_violin_plot(score_PGMC_all_mutations_reduced, "PGMC mutations at V0 and V1 (both visits)",ymin = 1.5,ymax = 20) 
+save_plot_pdf(p, filename = "plots/grouped_violin_PGMC_muations_bothvisits.pdf",width = 8,height = 6)
+p = grouped_violin_plot_mutation(score_status_V0_PGMC_mutations,"PGMC mutations at V0",ymin = 2, ymax = 20)
+save_plot_pdf(p, filename = "plots/grouped_violin_PGMC_mutations_V0.pdf",width = 8,height = 6)
+p = grouped_violin_plot_mutation(score_status_V1_PGMC_mutations,"PGMC mutations at V1",ymin = 2, ymax = 20)
+save_plot_pdf(p, filename = "plots/grouped_violin_PGMC_mutations_V1.pdf",width = 8,height = 6)
 
 # pairwise violin plots
 score_status_V0_V1_reduced_PGMC = score_status_V0_V1_reduced %>% filter(status == "PGMC") 
@@ -468,7 +509,7 @@ pairwise_plots <- function(data,title_plot,colour_plot){
     scale_color_manual(values = c(colour_plot,colour_plot))
 }
 
-grouped_violin_plot <- function(data,title_plot){
+grouped_violin_plot <- function(data,title_plot,ymin = -1.5, ymax = 17){
   # stat.test <- data %>%
   #   group_by(visit) %>%
   #   t_test(status ~ score)
@@ -478,12 +519,20 @@ grouped_violin_plot <- function(data,title_plot){
   #   data = data, dv = score, wid = PatientID,
   #   between = status, within = visit
   # )
+  if(length(grep("PGMC_",data$status))>0){
+  data <- data %>%
+    mutate(status = str_remove(status, "PGMC_"))
+  data$status <- factor(data$status,
+                        levels = c("C9orf72","SOD1","TARDBP","other"))}
   stats_results_V0 <-  kruskal.test(score ~ status, data = data %>% filter(visit == "V0"))
   stats_results_V1 <-  kruskal.test(score ~ status, data = data %>% filter(visit == "V1"))
   sign <- data %>%
     group_by(visit) %>%
     pairwise_wilcox_test(score ~ status, p.adjust.method = "bonferroni")  %>%
     add_xy_position(x = "visit")
+  data_summarise <- data %>%
+    group_by(visit, status) %>%
+    summarise(n = n())
   ggplot(data, aes(visit, score, group = interaction(visit,status))) +
     geom_point(aes(color = status, fill = after_scale(alpha(colour, 0.5))), 
                position = position_jitterdodge(dodge.width = 0.6, 0.1),
@@ -503,9 +552,21 @@ grouped_violin_plot <- function(data,title_plot){
                      aes(label = paste0("hat(mu)*scriptstyle(mean)==", 
                                         round(after_stat(y), 2))),
                      parse = TRUE, position = position_dodge(0.6)) +
+    geom_text(data = data_summarise, aes(x= visit, group = interaction(visit,status),
+                                         label = paste0(status,"\n (n=",n,")"),y =ymin,color = "grey"), 
+              position = position_dodge(0.6), size = 3) +
+   # geom_text(aes(label = after_stat(count),y = after_stat(count + 2), x = interaction(visit,status)),
+   #    stat = "count" ) +
+    #geom_label(stat = "summary", fun = count, aes(label = after_stat(y),y = min(y)), parse = TRUE) +
+    # geom_label(inherit.aes = FALSE, data = data,
+    #            aes(label = paste0(n, " Obs."), x = visit), y = -0.5) +
     scale_color_manual(values  = c('CTR' = '#6F8EB2',  
                                    'ALS' = '#B2936F',
-                                   'PGMC' = '#ad5291')) +
+                                   'PGMC' = '#ad5291',
+                                   'other' = '#ad5291',
+                                   'C9orf72' = '#55aa82',
+                                   'SOD1' = '#4661b9',
+                                   'TARDBP' = '#B99E46')) +
     # stat_pvalue_manual(
     #   stat.test, label = "p.adj", tip.length = 0.01,
     #   bracket.nudge.y = -2) +
@@ -520,13 +581,22 @@ grouped_violin_plot <- function(data,title_plot){
                        step.increase = 0.1,
                        step.group.by = "visit") +
     labs(subtitle = paste0("Kruskal-Wallis (V0) = ",round(stats_results_V0$p.value,3),
-                           "; Kruskal-Wallis (V1) = ",round(stats_results_V1$p.value,3)))
+                           "; Kruskal-Wallis (V1) = ",round(stats_results_V1$p.value,3))) +
+    ylim(ymin,ymax)
 }
 
-grouped_violin_plot_mutation <- function(data,title_plot){
+grouped_violin_plot_mutation <- function(data,title_plot,ymin = 1,ymax = 20){
+  if(length(grep("PGMC",data$status))>0){
+    data <- data %>%
+      mutate(status = str_remove(status, "PGMC_"))
+    data$status <- factor(data$status,
+                          levels = c("C9orf72","SOD1","TARDBP","other"))}
   stats_results_V0 <-  kruskal.test(score ~ status, data = data)
   sign <- data %>%
     pairwise_wilcox_test(score ~ status, p.adjust.method = "bonferroni") 
+  data_summarise <- data %>%
+    group_by(status) %>%
+    summarise(n = n())
   ggplot(data, aes(status, score, group = status)) +
     geom_point(aes(color = status, fill = after_scale(alpha(colour, 0.5))), 
                position = position_jitterdodge(dodge.width = 0.6, 0.1),
@@ -546,10 +616,13 @@ grouped_violin_plot_mutation <- function(data,title_plot){
                      aes(label = paste0("hat(mu)*scriptstyle(mean)==", 
                                         round(after_stat(y), 2))),
                      parse = TRUE, position = position_dodge(0.6)) +
-    scale_color_manual(values  = c('PGMC_other' = '#ad5291',
-                                   'PGMC_C9orf72' = '#55aa82',
-                                   'PGMC_SOD1' = '#4661b9',
-                                   'PGMC_TARDBP' = '#B99E46')) +
+    geom_text(data = data_summarise, aes(x= status, group = status,
+                                         label = paste0(status,"\n (n=",n,")"),y =ymin,color = "grey"), 
+              position = position_dodge(0.6), size = 3) +
+    scale_color_manual(values  = c('other' = '#ad5291',
+                                   'C9orf72' = '#55aa82',
+                                   'SOD1' = '#4661b9',
+                                   'TARDBP' = '#B99E46')) +
     # stat_pvalue_manual(
     #   stat.test, label = "p.adj", tip.length = 0.01,
     #   bracket.nudge.y = -2) +
@@ -562,5 +635,6 @@ grouped_violin_plot_mutation <- function(data,title_plot){
                        tip.length = 0.02,
                        dodge = 0.8,
                        step.increase = 0.1) +
-    labs(subtitle = paste0("Kruskal-Wallis = ",round(stats_results_V0$p.value,3)))
+    labs(subtitle = paste0("Kruskal-Wallis = ",round(stats_results_V0$p.value,3))) +
+    ylim(ymin,ymax)
 }
