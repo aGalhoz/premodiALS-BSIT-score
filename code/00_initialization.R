@@ -22,19 +22,19 @@ dir.create(file.path(getwd(),'plots'), showWarnings = FALSE)
 
 ### Collect data
 # raw data with smells
-BSIT <- read_delim("export-2025-02-25-PREMODIALS-AKDTR_CHUFR_HMCIL_KSSGCH_MRI_NIUSASSK_197 patients/BSIT.csv", 
+BSIT <- read_delim("export-2025-03-31-PREMODIALS-AKDTR_CHUFR_HMCIL_KSSGCH_MRI_NIUSASSK/BSIT.csv", 
                    delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
 # meanings of raw data
-BSIT_dic <- read_delim("export-2025-02-25-PREMODIALS-AKDTR_CHUFR_HMCIL_KSSGCH_MRI_NIUSASSK_197 patients/BSIT(C).csv", 
+BSIT_dic <- read_delim("export-2025-03-31-PREMODIALS-AKDTR_CHUFR_HMCIL_KSSGCH_MRI_NIUSASSK/BSIT(C).csv", 
                       delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
 # patient demographics
-GeneralDocumentation <- read_delim("export-2025-02-25-PREMODIALS-AKDTR_CHUFR_HMCIL_KSSGCH_MRI_NIUSASSK_197 patients/GeneralDocumentation.csv", 
+GeneralDocumentation <- read_delim("export-2025-03-31-PREMODIALS-AKDTR_CHUFR_HMCIL_KSSGCH_MRI_NIUSASSK/GeneralDocumentation.csv", 
                                    delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
 # meanings of patient demographics
-GeneralDocumentation_dic <- read_delim("export-2025-02-25-PREMODIALS-AKDTR_CHUFR_HMCIL_KSSGCH_MRI_NIUSASSK_197 patients/GeneralDocumentation(C).csv", 
+GeneralDocumentation_dic <- read_delim("export-2025-03-31-PREMODIALS-AKDTR_CHUFR_HMCIL_KSSGCH_MRI_NIUSASSK/GeneralDocumentation(C).csv", 
                                      delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
 

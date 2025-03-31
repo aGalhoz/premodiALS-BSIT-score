@@ -25,16 +25,24 @@ score_status_V0_ALS_CTR = data.frame(score = score_V0_ALS_CTR$score,
 score_status_V0_ALS_CTR_reduced = score_status_V0_ALS_CTR[which(smell_data_V0_ALS_CTR$PatientID %in% smell_data_V1_ALS_CTR$PatientID),]
 score_status_V1_ALS_CTR = data.frame(score = score_V1_ALS_CTR$score,
                                      status = status_V1_ALS_CTR)
+score_status_V0_ALS_mimic = data.frame(score = score_V0_ALS_mimic$score,
+                                     status = status_V0_ALS_mimic)
+score_status_V0_ALS_mimic_reduced = score_status_V0_ALS_mimic[which(smell_data_V0_ALS_mimic$PatientID %in% smell_data_V1_ALS_mimic$PatientID),]
+score_status_V1_ALS_mimic = data.frame(score = score_V1_ALS_mimic$score,
+                                     status = status_V1_ALS_mimic)
 score_status_V0_ALS_PGMC = data.frame(score = score_V0_ALS_PGMC$score,
                                       status = status_V0_ALS_PGMC)
 score_status_V0_ALS_PGMC_reduced = score_status_V0_ALS_PGMC[which(smell_data_V0_ALS_PGMC$PatientID %in% smell_data_V1_ALS_PGMC$PatientID),]
 score_status_V1_ALS_PGMC = data.frame(score = score_V1_ALS_PGMC$score,
                                       status = status_V1_ALS_PGMC)
 score_status_V0_V1_ALS_CTR = rbind(score_status_V0_ALS_CTR_reduced %>%
-  mutate(visit = rep("V0",34)),score_status_V1_ALS_CTR %>% mutate(visit = rep("V1",34)))
+  mutate(visit = rep("V0",49)),score_status_V1_ALS_CTR %>% mutate(visit = rep("V1",49)))
+score_status_V0_V1_ALS_mimic = rbind(score_status_V0_ALS_mimic_reduced %>%
+                                     mutate(visit = rep("V0",27)),
+                                     score_status_V1_ALS_mimic %>% mutate(visit = rep("V1",27)))
 score_status_V0_V1_ALS_PGMC = rbind(score_status_V0_ALS_PGMC_reduced %>%
-                                     mutate(visit = rep("V0",38)),
-                                    score_status_V1_ALS_PGMC %>% mutate(visit = rep("V1",38)))
+                                     mutate(visit = rep("V0",48)),
+                                    score_status_V1_ALS_PGMC %>% mutate(visit = rep("V1",48)))
 score_status_V0_CTR_PGMC = data.frame(score = score_V0_CTR_PGMC$score,
                                      status = status_V0_CTR_PGMC)
 score_status_V0_CTR_PGMC_reduced = score_status_V0_CTR_PGMC[which(smell_data_V0_CTR_PGMC$PatientID %in%
@@ -42,8 +50,8 @@ score_status_V0_CTR_PGMC_reduced = score_status_V0_CTR_PGMC[which(smell_data_V0_
 score_status_V1_CTR_PGMC = data.frame(score = score_V1_CTR_PGMC$score,
                                       status = status_V1_CTR_PGMC)
 score_status_V0_V1_CTR_PGMC = rbind(score_status_V0_CTR_PGMC_reduced %>%
-                                     mutate(visit = rep("V0",46)),
-                                    score_status_V1_CTR_PGMC %>% mutate(visit = rep("V1",46)))
+                                     mutate(visit = rep("V0",51)),
+                                    score_status_V1_CTR_PGMC %>% mutate(visit = rep("V1",51)))
 # PGMC mutations
 # -> V0
 score_status_V0_PGMC_other_C9orf72 = data.frame(score = score_data_V0_PGMC_mut_other_C9orf72$score,
@@ -84,10 +92,10 @@ score_PGMC_V1_all_mutations <- score_status_V1_PGMC_mutations %>%
   left_join(GeneralDocumentation %>% select(PatientID,NumRepeatsC9orf72,contains("PreciseMutation")))
 writexl::write_xlsx(score_PGMC_V1_all_mutations,"results/score_PGMC_V1_mutations.xlsx")
 
-score_PGMC_all_mutations <- rbind(score_PGMC_V0_all_mutations %>% mutate(visit = rep("V0",52)),
+score_PGMC_all_mutations <- rbind(score_PGMC_V0_all_mutations %>% mutate(visit = rep("V0",56)),
                                   score_PGMC_V1_all_mutations %>% mutate(visit = rep("V1",25)))
 writexl::write_xlsx(score_PGMC_all_mutations,"results/score_PGMC_mutations.xlsx")
-score_PGMC_all_mutations_reduced <- rbind(score_PGMC_V0_all_mutations %>% mutate(visit = rep("V0",52)) %>%
+score_PGMC_all_mutations_reduced <- rbind(score_PGMC_V0_all_mutations %>% mutate(visit = rep("V0",56)) %>%
                                                                                    filter(PatientID %in% score_PGMC_V1_all_mutations$PatientID),
                                           score_PGMC_V1_all_mutations %>% mutate(visit = rep("V1",25)))
 
@@ -99,19 +107,30 @@ score_status_V0_V1_reduced <- rbind(score_status_V0_V1_ALS_CTR %>%
                        smell_data_V1_CTR$PatientID)),
   score_status_V0_V1_ALS_PGMC %>% 
     filter(status == "PGMC") %>%
-    mutate(PatientID = c(smell_data_V1_PGMC$PatientID,smell_data_V1_PGMC$PatientID))) %>%
+    mutate(PatientID = c(smell_data_V1_PGMC$PatientID,smell_data_V1_PGMC$PatientID)),
+  score_status_V0_V1_ALS_mimic %>%
+    filter(status == "mimic") %>%
+    mutate(PatientID = c(smell_data_V1_mimic$PatientID,smell_data_V1_mimic$PatientID))) %>%
   arrange(visit)
 score_status_V0_V1 <- rbind(rbind(score_status_V0_ALS_CTR %>%
-                                    mutate(visit = rep("V0",95)),score_status_V1_ALS_CTR %>% mutate(visit = rep("V1",34))) %>%
+                                    mutate(visit = rep("V0",111)),
+                                  score_status_V1_ALS_CTR %>% mutate(visit = rep("V1",49))) %>%
                                       mutate(PatientID = c(smell_data_V0_ALS$PatientID,
                                                            smell_data_V0_CTR$PatientID,
                                                            smell_data_V1_ALS$PatientID,
                                                            smell_data_V1_CTR$PatientID)),
                             rbind(score_status_V0_ALS_PGMC %>%
-                                    mutate(visit = rep("V0",99)),
-                                  score_status_V1_ALS_PGMC %>% mutate(visit = rep("V1",38))) %>% 
+                                    mutate(visit = rep("V0",118)),
+                                  score_status_V1_ALS_PGMC %>% mutate(visit = rep("V1",48))) %>% 
                                       filter(status == "PGMC") %>%
-                                      mutate(PatientID = c(smell_data_V0_PGMC$PatientID,smell_data_V1_PGMC$PatientID))) %>%
+                                      mutate(PatientID = c(smell_data_V0_PGMC$PatientID,smell_data_V1_PGMC$PatientID)),
+                            rbind(score_status_V0_ALS_mimic %>%
+                                    mutate(visit = rep("V0",76)),
+                                  score_status_V1_ALS_mimic %>%
+                                    mutate(visit = rep("V1",27))) %>%
+                              filter(status == "mimic") %>%
+                              mutate(PatientID = c(smell_data_V0_mimic$PatientID,
+                                                   smell_data_V1_mimic$PatientID))) %>%
   arrange(visit)
 writexl::write_xlsx(score_status_V0_V1,"results/score_status_V0_V1_all.xlsx")
 writexl::write_xlsx(score_status_V0_V1_reduced,"results/score_status_V0_V1_reduced.xlsx")
@@ -182,14 +201,24 @@ p = grouped_violin_plot(score_status_V0_V1_ALS_CTR, "ALS and CTR scores at V0 an
 save_plot_pdf(p, filename = "plots/grouped_violin_ALS_CTR.pdf")
 p = grouped_violin_plot(score_status_V0_V1_CTR_PGMC, "CTR and PGMC scores at V0 and V1")
 save_plot_pdf(p, filename = "plots/grouped_violin_CTR_PGMC.pdf")
-score_status_V0_V1_reduced$status <- factor(score_status_V0_V1_reduced$status,levels = c("CTR","PGMC","ALS"))
-p = grouped_violin_plot(score_status_V0_V1_reduced, "ALS, CTR and PGMC scores at V0 and V1 (both visits)")
+score_status_V0_V1_reduced$status <- factor(score_status_V0_V1_reduced$status,levels = c("CTR","PGMC","ALS","mimic"))
+p = grouped_violin_plot(score_status_V0_V1_reduced %>%
+                          filter(status != "mimic"), "ALS, CTR and PGMC scores at V0 and V1 (both visits)")
 save_plot_pdf(p, filename = "plots/grouped_violin_ALS_CTR_PGMC_bothvisits.pdf",width = 8,height = 6)
-score_status_V0_V1$status <- factor(score_status_V0_V1$status,levels = c("CTR","PGMC","ALS"))
-p = grouped_violin_plot(score_status_V0_V1, "ALS, CTR and PGMC scores at V0 and V1 (all participants)") 
+score_status_V0_V1$status <- factor(score_status_V0_V1$status,levels = c("CTR","PGMC","ALS","mimic"))
+p = grouped_violin_plot(score_status_V0_V1 %>%
+                          filter(status != "mimic"), "ALS, CTR and PGMC scores at V0 and V1 (all participants)") 
 save_plot_pdf(p, filename = "plots/grouped_violin_ALS_CTR_PGMC_all.pdf",width = 8,height = 6)
+
+score_status_V0_V1_reduced$status <- factor(score_status_V0_V1_reduced$status,levels = c("CTR","PGMC","ALS","mimic"))
+p = grouped_violin_plot(score_status_V0_V1_reduced, "CTR, PGMC, Mimic and ALS scores at V0 and V1 (both visits)",ymax = 22)
+save_plot_pdf(p, filename = "plots/grouped_violin_ALS_CTR_PGMC_mimic_bothvisits.pdf",width = 8,height = 6)
+score_status_V0_V1$status <- factor(score_status_V0_V1$status,levels = c("CTR","PGMC","ALS","mimic"))
+p = grouped_violin_plot(score_status_V0_V1, "CTR, PGMC, Mimic and ALS scores at V0 and V1 (all participants)",ymax =22) 
+save_plot_pdf(p, filename = "plots/grouped_violin_ALS_CTR_PGMC_mimic_all.pdf",width = 8,height = 6)
+
 p = grouped_violin_plot(score_PGMC_all_mutations, "PGMC mutations at V0 and V1 (all participants)",ymin = 1.5,ymax = 20) 
-save_plot_pdf(p, filename = "plots/grouped_violin_PGMC_muations_all.pdf",width = 8,height = 6)
+save_plot_pdf(p, filename = "plots/grouped_violin_PGMC_mutations_all.pdf",width = 8,height = 6)
 p = grouped_violin_plot(score_PGMC_all_mutations_reduced, "PGMC mutations at V0 and V1 (both visits)",ymin = 1.5,ymax = 20) 
 save_plot_pdf(p, filename = "plots/grouped_violin_PGMC_muations_bothvisits.pdf",width = 8,height = 6)
 p = grouped_violin_plot_mutation(score_status_V0_PGMC_mutations,"PGMC mutations at V0",ymin = 2, ymax = 20)
@@ -563,6 +592,7 @@ grouped_violin_plot <- function(data,title_plot,ymin = -1.5, ymax = 17){
     scale_color_manual(values  = c('CTR' = '#6F8EB2',  
                                    'ALS' = '#B2936F',
                                    'PGMC' = '#ad5291',
+                                   'mimic' = '#62cda9',
                                    'other' = '#ad5291',
                                    'C9orf72' = '#55aa82',
                                    'SOD1' = '#4661b9',
